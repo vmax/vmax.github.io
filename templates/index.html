@@ -12,6 +12,14 @@
 
     <link rel="stylesheet" href="{{ get_url(path="main.css", trailing_slash=false) }}">
 
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZHVH8SD2XC');
+    </script>
+
     {% block extra_head %}
     {% endblock extra_head %}
 </head>
