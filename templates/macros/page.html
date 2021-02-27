@@ -1,0 +1,40 @@
+{% macro page_info(page) %}
+    <div class="article-info">
+        {% if page.date %}
+        <div class="article-date">{{ page.date | date(format='%Y-%m-%d') }}</div>
+        {% endif %}
+    </div>
+{% endmacro page_info %}
+
+{% macro page_listing(page) %}
+    <article class="post-list">
+        <header> 
+            <h1>
+                <a href="{{ page.permalink }}">{{ page.title }}</a>
+            </h1>
+        </header>
+
+        {% if page.description %}
+        <div class="content post-summary">
+            {{ page.description | markdown | safe }}
+        </div>
+        {% endif %}
+        
+        {{ self::page_info(page=page) }}
+    </article>
+{% endmacro page_listing %}
+
+{% macro page_pagination(paginator) %}
+    <div class="pagination">
+        <div class="left pagination-item {% if not paginator.previous %}disabled{% endif %}">
+            {% if paginator.previous %}
+            <a href="{{ paginator.previous }}">To newer posts</a>
+            {% endif %}
+        </div>
+        <div class="right pagination-item {% if not paginator.next %}disabled{% endif %}">
+            {% if paginator.next %}
+            <a href="{{ paginator.next }}">To older posts</a>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro page_pagination %}
