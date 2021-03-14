@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>Order of files inside ZIP archives</title>
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZHVH8SD2XC');
+    </script>
+
+    
+    
+</head>
+<body>
+    <div class="container">
+        <label class="site-title">vmax.dev</label>
+        <main id="main" tabindex="-1">
+            
+
+<article class="post">
+    <a class="baselink" href="https:&#x2F;&#x2F;vmax.dev">&larr;</a>
+    <header>
+        <h1>Order of files inside ZIP archives</h1>
+    </header>
+    <div class="content">
+        <p>One of the most annoying bugs I ever had to track down has to do with the fact that
+files in the ZIP archive are <strong>ordered</strong>. As a ZIP file consumer, you
+won't notice it: if you get two archives where only order of the files
+is changed and unpack them, you won't see any difference.</p>
+<p>However, once you embark on a journey of reproducible builds, there's
+nothing as frustrating as a cache miss with unchanged sources - and the
+resulting ZIPs only differ when compared by checksum.</p>
+<p>Reproducible example:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">&gt;&gt;&gt; from zipfile import ZipFile
+&gt;&gt;&gt; zf1 = ZipFile(&#39;test1.zip&#39;, &#39;w&#39;)
+&gt;&gt;&gt; zf1.writestr(&#39;a&#39;, &#39;&#39;)
+&gt;&gt;&gt; zf1.writestr(&#39;b&#39;, &#39;&#39;)
+&gt;&gt;&gt; zf1.close()
+
+&gt;&gt;&gt; zf2 = ZipFile(&#39;test2.zip&#39;, &#39;w&#39;)
+&gt;&gt;&gt; zf2.writestr(&#39;b&#39;, &#39;&#39;)
+&gt;&gt;&gt; zf2.writestr(&#39;a&#39;, &#39;&#39;)
+&gt;&gt;&gt; zf2.close()
+</span></code></pre><pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">$ md5sum test1.zip
+72bf1a6d0e0ad7a0c2548168b701e4ad  test1.zip
+$ md5sum test2.zip
+f5fc3ae82cbd94c70b27f2d479648b26  test2.zip
+</span></code></pre>
+<p><a href="https://github.com/graknlabs/bazel-distribution/pull/94/">This</a> is the fix we applied - file names are pre-sorted
+before getting packaged into the archive.</p>
+
+    </div>
+
+    
+    <div class="article-info">
+        
+        <div class="article-date">2019-03-28</div>
+        
+    </div>
+
+</article>
+
+
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://vmax.dev/</loc>
+    </url>
+    <url>
+        <loc>https://vmax.dev/devices-i-owned/</loc>
+        <lastmod>2021-01-07</lastmod>
+    </url>
+    <url>
+        <loc>https://vmax.dev/logging-into-google-with-selenium/</loc>
+        <lastmod>2017-07-20</lastmod>
+    </url>
+    <url>
+        <loc>https://vmax.dev/motorola-kernel/</loc>
+        <lastmod>2021-03-14</lastmod>
+    </url>
+    <url>
+        <loc>https://vmax.dev/producing-long-running-reports/</loc>
+        <lastmod>2021-01-03</lastmod>
+    </url>
+    <url>
+        <loc>https://vmax.dev/python-concurrency-gotcha/</loc>
+        <lastmod>2021-01-15</lastmod>
+    </url>
+    <url>
+        <loc>https://vmax.dev/zip-file-order/</loc>
+        <lastmod>2019-03-28</lastmod>
+    </url>
+</urlset>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>That day when I felt like a kernel hacker</title>
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZHVH8SD2XC');
+    </script>
+
+    
+    
+</head>
+<body>
+    <div class="container">
+        <label class="site-title">vmax.dev</label>
+        <main id="main" tabindex="-1">
+            
+
+<article class="post">
+    <a class="baselink" href="https:&#x2F;&#x2F;vmax.dev">&larr;</a>
+    <header>
+        <h1>That day when I felt like a kernel hacker</h1>
+    </header>
+    <div class="content">
+        <p>Circa 2018 I used to rock a cheap-but-reliable smartphone: <a href="https://www.gsmarena.com/motorola_moto_g5s-8698.php">Moto G5s</a>.
+On a fateful day, it slipped through my pocket and ended up on the ground. Of course, the screen cracked and I
+had no other choice but to take it to the repair shop. It quoted me a <em>third</em> of the price
+I originally paid for the whole thing and I accepted.</p>
+<p>Everything went fine until an update to Android 8.1 Oreo arrived. My touchscreen, perfectly
+operational before the update, stopped functioning!</p>
+<p>Being somewhat comfortable playing around with Android ROMs, I unlocked the bootloader and rolled the operating system back
+to Android Nougat. From now on, I was puzzled: I wanted to have the latest-and-greatest operating system
+but it would also imply the most essential part of the smartphone would not work.</p>
+<p>Android is based on Linux, an open-source software. More importantly, it's <em>copyleft</em> software which means
+anybody who modifies it must give back modifications to the mainline source tree. Motorola was no exception and
+so I managed to find the sources <a href="https://github.com/premaca/kernel_motorola_msm8953_sanders">here</a>.</p>
+<p>Deductive reasoning led me to realize that the very code that made my phone respond (or not respond) to touches
+must be stored under <code>drivers/input/touchscreen</code> source directory. What I proceeded with doing is grabbing the
+full directory from  <code>nougat-7.1.1-release-sanders</code> branch, switching to <code>8.1-moto</code> branch and copying the old version
+into the source tree.</p>
+<p>Imagine my surprise when it <strong>worked</strong>. My phones started responding to touches again <em>and</em> it was running latest-and-greatest
+Android Oreo. I was happier than a little child in a candy store!</p>
+<p>Now, the sustainability bit that I teased. I once had to do something similar (downgrading) to my friend's iPhone 6S.
+After upgrading, the display worked but the touchscreen stopped responding (apparently repair shops get the screen from very untrustworthy vendors!). However, there's no such thing as unlocking the bootloader at your own will in the Apple world.
+What you can do is downgrade while the firmware you're trying to downgrade to is still <em>signed</em> by Apple (you can check it <a href="https://ipsw.me/">here</a>).
+Luckily for my friend, he upgraded <em>before</em> they stopped signing the old version and we were able to roll it back
+to the version that still worked. Given the closed nature of Apple, that's as far as we can get. We cannot hack it around to use a mishmash of old touchscreen driver and new operating system. Once upgraded, it shall remain a glass brick forever and ever.
+This Android phone, on the other hand, still runs a modified kernel to this day with no reliability issues.</p>
+
+    </div>
+
+    
+    <div class="article-info">
+        
+        <div class="article-date">2021-03-14</div>
+        
+    </div>
+
+</article>
+
+
+        </main>
+    </div>
+</body>
+</html>

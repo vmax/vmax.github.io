@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>Producing long-running reports</title>
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZHVH8SD2XC');
+    </script>
+
+    
+    
+</head>
+<body>
+    <div class="container">
+        <label class="site-title">vmax.dev</label>
+        <main id="main" tabindex="-1">
+            
+
+<article class="post">
+    <a class="baselink" href="https:&#x2F;&#x2F;vmax.dev">&larr;</a>
+    <header>
+        <h1>Producing long-running reports</h1>
+    </header>
+    <div class="content">
+        <p>Sometimes there's a need to produce reports that take more to produce than
+any sensible HTTP load balancer would allow (say, Heroku's 30 seconds limitation).</p>
+<p>Usually, we'd overcome it by spawning another machine (<em>worker</em>).
+It would handle the long-running tasks we hand off to it and won't be subject to
+HTTP request-response cycle time limitations.</p>
+<p>While being a generally preferred approach, I don't necessarily enjoy it.
+It comes with its share of complexities, such as having more components to keep track of:
+worker, message broker, result broker and storage for the produced reports.</p>
+<p>An alternative approach I suggest would be to <strong>stream</strong> the response bits as they are being produced.
+Then limitations become much more manageable: you have to send the first byte before 30 seconds,
+each next chunk has 55 seconds to be produced (<a href="https://devcenter.heroku.com/articles/http-routing#timeouts">source</a>)</p>
+<p>Here is how you would implement it with Django:</p>
+<pre style="background-color:#2b303b;">
+<code class="language-python" data-lang="python"><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">csv
+</span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">time
+</span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">io
+</span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">django.http </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">StreamingHttpResponse
+
+
+</span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">streaming_csv_view</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">request</span><span style="color:#c0c5ce;">):
+    </span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">data</span><span style="color:#c0c5ce;">():
+        </span><span style="color:#b48ead;">for </span><span style="color:#c0c5ce;">i </span><span style="color:#b48ead;">in </span><span style="color:#96b5b4;">range</span><span style="color:#c0c5ce;">(</span><span style="color:#d08770;">30</span><span style="color:#c0c5ce;">):
+            </span><span style="color:#b48ead;">yield f</span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">Row </span><span style="color:#c0c5ce;">{i}</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;  </span><span style="color:#65737e;"># yield results as they are produced
+            </span><span style="color:#c0c5ce;">time.</span><span style="color:#bf616a;">sleep</span><span style="color:#c0c5ce;">(</span><span style="color:#d08770;">2</span><span style="color:#c0c5ce;">)  </span><span style="color:#65737e;"># simulate non-instant generation
+    </span><span style="color:#c0c5ce;">response = </span><span style="color:#bf616a;">StreamingHttpResponse</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">data</span><span style="color:#c0c5ce;">(), </span><span style="color:#bf616a;">content_type</span><span style="color:#c0c5ce;">=&quot;</span><span style="color:#a3be8c;">text/csv</span><span style="color:#c0c5ce;">&quot;)
+    response[&#39;</span><span style="color:#a3be8c;">Content-Disposition</span><span style="color:#c0c5ce;">&#39;] = &#39;</span><span style="color:#a3be8c;">attachment; filename=&quot;report.csv&quot;</span><span style="color:#c0c5ce;">&#39;
+    </span><span style="color:#b48ead;">return </span><span style="color:#c0c5ce;">response
+</span></code></pre>
+<p>Note that if you're using GUnicorn as your server, you'd need to switch to asynchronous workers (
+if you were using <code>sync</code> workers before):</br>
+<code>gunicorn django_app.wsgi -k gevent</code></p>
+
+    </div>
+
+    
+    <div class="article-info">
+        
+        <div class="article-date">2021-01-03</div>
+        
+    </div>
+
+</article>
+
+
+        </main>
+    </div>
+</body>
+</html>

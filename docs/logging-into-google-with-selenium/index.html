@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>Logging into Google with Selenium</title>
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZHVH8SD2XC');
+    </script>
+
+    
+    
+</head>
+<body>
+    <div class="container">
+        <label class="site-title">vmax.dev</label>
+        <main id="main" tabindex="-1">
+            
+
+<article class="post">
+    <a class="baselink" href="https:&#x2F;&#x2F;vmax.dev">&larr;</a>
+    <header>
+        <h1>Logging into Google with Selenium</h1>
+    </header>
+    <div class="content">
+        <p><strong>Update from 2020: this workaround seems to have been patched by Google and is unlikely to work anymore. It's there for archival purposes only.</strong></p>
+<p>Recently one of my scraping scripts which included <a href="https://accounts.google.com/ServiceLogin">signing in</a> to Google account has broken. I've struggled for a couple hours to adapt the code to the new login form. So far, I thought I tried everything I could but got strange results to say the least. I could not even pass through username entry stage. <a href="https://support.google.com/accounts/answer/7338427?co=GENIE.Platform%3DDesktop&amp;hl=en">This page</a>
+inspired me for a simple solution: why fix it if it's not broken <em>by me</em> in the first place?</p>
+<blockquote>
+<p>You might still see the old sign-in page in these cases:
+• You use an older version of a browser
+• You've turned off JavaScript</p>
+</blockquote>
+<p>Turning JS off was not an option (<a href="https://stackoverflow.com/a/27787494/4617642">here's why</a>). I decided to go with the first one. Surprisingly, it worked just as expected! Now in the code, we fake <code>User-Agent</code> to be one of the Chrome very old versions, 19. I got the exact string from <a href="http://www.useragentstring.com/pages/useragentstring.php?name=Chrome">here</a>. It gets the job done: Google sends us the old log in form.</p>
+<p>This is the code used to achieve the task:</p>
+<pre style="background-color:#2b303b;">
+<code class="language-python" data-lang="python"><span style="color:#c0c5ce;">    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver.common.by </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">By
+    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">PhantomJS
+    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver.common.desired_capabilities </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">(
+        DesiredCapabilities)
+    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver.support </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">expected_conditions
+    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver.support.ui </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">WebDriverWait
+
+
+    </span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">google_sign_in</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">gmail_username</span><span style="color:#c0c5ce;">, </span><span style="color:#bf616a;">gmail_pass</span><span style="color:#c0c5ce;">):
+        </span><span style="color:#bf616a;">CHROME_UAG </span><span style="color:#c0c5ce;">= (&#39;</span><span style="color:#a3be8c;">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) </span><span style="color:#c0c5ce;">&#39;
+                      &#39;</span><span style="color:#a3be8c;">AppleWebKit/535.7 (KHTML, like Gecko) </span><span style="color:#c0c5ce;">&#39;
+                      &#39;</span><span style="color:#a3be8c;">Chrome/16.0.912.36 Safari/535.7</span><span style="color:#c0c5ce;">&#39;)
+        caps = DesiredCapabilities.</span><span style="color:#bf616a;">PHANTOMJS
+        </span><span style="color:#c0c5ce;">caps[&quot;</span><span style="color:#a3be8c;">phantomjs.page.settings.userAgent</span><span style="color:#c0c5ce;">&quot;] = </span><span style="color:#bf616a;">CHROME_UAG
+
+        </span><span style="color:#65737e;"># firstly, create webdriver for scraping
+        </span><span style="color:#c0c5ce;">driver = </span><span style="color:#bf616a;">PhantomJS</span><span style="color:#c0c5ce;">(
+            </span><span style="color:#bf616a;">executable_path</span><span style="color:#c0c5ce;">=&#39;</span><span style="color:#a3be8c;">bin/phantomjs</span><span style="color:#c0c5ce;">&#39;,
+            </span><span style="color:#bf616a;">desired_capabilities</span><span style="color:#c0c5ce;">=caps
+        )
+
+        </span><span style="color:#65737e;"># set size so we that we (and browser) can see everything
+        </span><span style="color:#c0c5ce;">driver.</span><span style="color:#bf616a;">set_window_size</span><span style="color:#c0c5ce;">(</span><span style="color:#d08770;">2000</span><span style="color:#c0c5ce;">, </span><span style="color:#d08770;">2000</span><span style="color:#c0c5ce;">)
+
+        </span><span style="color:#65737e;"># go to login form
+        </span><span style="color:#bf616a;">GOOGLE_SIGN_IN_URL </span><span style="color:#c0c5ce;">= &#39;</span><span style="color:#a3be8c;">https://accounts.google.com/ServiceLogin</span><span style="color:#c0c5ce;">&#39;
+        driver.</span><span style="color:#bf616a;">get</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">GOOGLE_SIGN_IN_URL</span><span style="color:#c0c5ce;">)
+
+        </span><span style="color:#65737e;"># enter username
+        </span><span style="color:#c0c5ce;">username_field = driver.</span><span style="color:#bf616a;">find_element_by_id</span><span style="color:#c0c5ce;">(&#39;</span><span style="color:#a3be8c;">Email</span><span style="color:#c0c5ce;">&#39;)
+        username_field.</span><span style="color:#bf616a;">send_keys</span><span style="color:#c0c5ce;">(gmail_username)
+        username_field.</span><span style="color:#bf616a;">submit</span><span style="color:#c0c5ce;">()
+
+        </span><span style="color:#65737e;"># enter password (but we have to wait until animation is finished)
+        </span><span style="color:#c0c5ce;">password_field = </span><span style="color:#bf616a;">WebDriverWait</span><span style="color:#c0c5ce;">(driver, </span><span style="color:#d08770;">10</span><span style="color:#c0c5ce;">).</span><span style="color:#bf616a;">until</span><span style="color:#c0c5ce;">(
+            expected_conditions.</span><span style="color:#bf616a;">element_to_be_clickable</span><span style="color:#c0c5ce;">((By.</span><span style="color:#bf616a;">ID</span><span style="color:#c0c5ce;">, &quot;</span><span style="color:#a3be8c;">Passwd</span><span style="color:#c0c5ce;">&quot;))
+        )
+
+        password_field.</span><span style="color:#bf616a;">send_keys</span><span style="color:#c0c5ce;">(gmail_pass)
+        password_field.</span><span style="color:#bf616a;">submit</span><span style="color:#c0c5ce;">()
+        </span><span style="color:#b48ead;">return </span><span style="color:#c0c5ce;">driver
+
+</span></code></pre>
+    </div>
+
+    
+    <div class="article-info">
+        
+        <div class="article-date">2017-07-20</div>
+        
+    </div>
+
+</article>
+
+
+        </main>
+    </div>
+</body>
+</html>
