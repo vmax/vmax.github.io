@@ -26,7 +26,9 @@ full directory from  `nougat-7.1.1-release-sanders` branch, switching to `8.1-mo
 into the source tree.
 
 Imagine my surprise when it **worked**. My phones started responding to touches again _and_ it was running latest-and-greatest
-Android Oreo. I was happier than a little child in a candy store!
+Android Oreo. I was happier than a little child in a candy store! I also managed to snug in my custom branding :)
+
+![Motorola kernel](https://user-images.githubusercontent.com/499267/111919188-b8ccf000-8a99-11eb-93b4-1751383ea00e.png)
 
 Now, the sustainability bit that I teased. I once had to do something similar (downgrading) to my friend's iPhone 6S.
 After upgrading, the display worked but the touchscreen stopped responding (apparently repair shops get the screen from very untrustworthy vendors!). However, there's no such thing as unlocking the bootloader at your own will in the Apple world.
