@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>Rancher setup guide</title>
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZHVH8SD2XC');
+    </script>
+
+    
+    
+</head>
+<body>
+    <div class="container">
+        <label class="site-title">vmax.dev</label>
+        <main id="main" tabindex="-1">
+            
+
+<article class="post">
+    <a class="baselink" href="https:&#x2F;&#x2F;vmax.dev">&larr;</a>
+    <header>
+        <h1>Rancher setup guide</h1>
+    </header>
+    <div class="content">
+        <p>This guide lays out, in general terms, instructions on provisioning
+<a href="https://rancher.com/">Rancher</a>, an orchestration system which allows
+for testing multiple versions of the same project in isolation. We
+assume Rancher and environments created by it are running on the same node.</p>
+<p>Prerequisites: Linux machine with:</p>
+<ul>
+<li>Docker installed and running</li>
+<li>Root SSH access to it</li>
+<li>Public IP address (<code>&lt;public_ip&gt;</code>)</li>
+</ul>
+<ol>
+<li>Start Rancher server itself. Non-standard ports <code>8080</code> and <code>443</code> have to be used.
+<code>docker run -d --restart=unless-stopped -p 8080:80 -p 8443:443 -v /opt/rancher:/var/lib/rancher rancher/rancher:latest</code></li>
+<li>Go to Rancher web UI (https://&lt;public_ip&gt;:8443), served over HTTPS. You'll get
+<code>NET::ERR_CERT_AUTHORITY_INVALID</code> because Rancher generates a self-signed certificate.
+Proceed with web installation: set up admin password, click &quot;Save URL&quot;</li>
+<li>Click &quot;Add cluster&quot; -&gt; &quot;From existing nodes (Custom)&quot;, set up &quot;Cluster Name&quot;
+(<code>node</code> used in example), click &quot;Next&quot;.</li>
+<li>Tick all of &quot;etcd&quot;, &quot;Control Plane&quot; and &quot;Worker&quot;. 
+Rancher UI would give you a command that resembles the following
+(<code>token</code> and <code>ca-checksum</code> would be filled in by Rancher):
+<code>docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kubernetes:/etc/kubernetes -v /var/run:/var/run rancher/rancher-agent:v2.3.2 --server https://&lt;public_ip&gt;:8443 --token &lt;token&gt; --ca-checksum &lt;ca_checksum&gt; --etcd --controlplane --worker</code>
+on the same machine Rancher is running on.
+Provisioning the node will take a while.</li>
+<li>Select <code>node</code> in top left menu (there will be &quot;Global&quot; and &quot;node&quot;), then click &quot;Projects/Namespaces&quot;</li>
+<li>Click &quot;Add project&quot;, name it &quot;CI infrastructure&quot; and click &quot;Create&quot;</li>
+<li>Click &quot;Namespaces&quot; and add <code>infra</code> namespace</li>
+</ol>
+<h1 id="creating-docker-registry">Creating Docker Registry</h1>
+<ol>
+<li>Click &quot;Apps&quot; -&gt; &quot;Launch&quot; and find <code>docker-registry</code>. Proceed with filling the details:</li>
+<li>Select Namespace -&gt; Use existing namespace -&gt; <code>infra</code></li>
+<li>Fill in &quot;Docker Registry Htpasswd Authentication&quot; by
+executing (locally): <code>docker run --entrypoint htpasswd registry:2 -Bbn &quot;username&quot; &quot;password&quot;</code></li>
+<li>Fill in &quot;NodePort Http Port&quot;: &quot;30861&quot;</li>
+<li>Click &quot;Launch&quot;</li>
+</ol>
+<p>At this point, we need to modify config of host node to allow accessing our registry.
+Paste the following into <code>/etc/docker/daemon.json</code>:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">{
+  &quot;insecure-registries&quot; : [&quot;&lt;public_ip&gt;:30861&quot;]
+}
+</span></code></pre>
+<p>and reload the config:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">systemctl daemon-reload
+systemctl restart docker
+</span></code></pre>
+<p>You can verify registry is accessible by accessing http://&lt;public_ip&gt;:30861/v2
+Internally (e.g. from Drone CI) registry will be referenced
+by <code>docker-registry.infra.svc.cluster.local:5000</code> hostname.</p>
+<h1 id="setting-up-drone-ci">Setting up Drone CI</h1>
+<p>Obtain OAuth 2 client id and secret by creating &quot;Github OAuth app&quot; or &quot;Bitbucket OAuth consumer&quot;
+in GitHub/Bitbucket dashboard, respectively. Redirect URI there
+should be set there to &quot;&lt;public_ip&gt;:30000/login&quot;</p>
+<ol>
+<li>Click &quot;Apps&quot; -&gt; &quot;Launch&quot; and find <code>drone</code>. Proceed with filling the details:</li>
+<li>Select Namespace -&gt; Use existing namespace -&gt; <code>infra</code></li>
+<li>Fill in &quot;Drone host domain&quot;: &quot;&lt;public_ip&gt;:30000&quot; (make sure to include the port)</li>
+<li>Fill in &quot;Set Drone Admin User&quot;: your username in source control system</li>
+<li>Fill in &quot;Drone Integration Server&quot;: <code>github</code>/<code>bitbucket cloud</code></li>
+<li>Fill in OAuth 2 client id and client secret</li>
+<li>Fill in, if needed, &quot;Bitbucket Server Username&quot;: your username in source control system</li>
+<li>Fill in &quot;NodePort Http Port&quot;: 30000</li>
+</ol>
+<h1 id="creating-pv-persistent-volumes">Creating PV (persistent volumes)</h1>
+<p>In order for apps to persist data (DB, redis, staticfiles), their config
+will need to define PVC (persistent volume claim). In order to satisfy that
+claim, PV (persistent volume) should be created. We'll be creating
+filesystem-backed PVs. Keep in mind that they are stored inside <em>node</em>
+and not the host that runs Rancher (although they are the same machine)</p>
+<ol>
+<li>Select <code>node</code> in top left menu (there will be &quot;Global&quot; and &quot;node&quot;), then click &quot;Storage&quot;</li>
+<li>Click &quot;Add volume&quot; and fill in the details:</li>
+<li>Fill in &quot;Name&quot;: &quot;vol1&quot;</li>
+<li>Fill in &quot;Volume Plugin&quot;: &quot;Local Node Path&quot;</li>
+<li>Fill in &quot;Capacity&quot;</li>
+<li>Fill in &quot;Path on the Node&quot;: &quot;/mnt/k8s/vol1&quot;</li>
+<li>Fill in &quot;Path on the Node must be&quot;: &quot;A directory, or create if it does not exist&quot;</li>
+<li>Click &quot;Customize&quot;, tick all Access Modes</li>
+<li>Click &quot;Save&quot;</li>
+</ol>
+<p>By default, created PVs have reclaim Policy set to &quot;Retain&quot;, which means
+that volumes will retain data on removing the claim. For test purposes,
+reclaim policy <code>Recycle</code> is more appropriate as it removes data on the volume
+and makes in available for further claims. However, it cannot be configured via
+Rancher UI, so we're resorting to command line.</p>
+<ol>
+<li>Select <code>node</code> in top left menu (there will be &quot;Global&quot; and &quot;node&quot;), then click &quot;Cluster&quot;</li>
+<li>Click &quot;Launch kubectl&quot;</li>
+<li>For every volume you've created, execute:
+<code>kubectl patch pv &lt;pvName&gt; -p '{&quot;spec&quot;:{&quot;persistentVolumeReclaimPolicy&quot;:&quot;Recycle&quot;}}'</code>.
+You can get list of PVs by executing <code>kubectl get pv</code></li>
+</ol>
+
+    </div>
+
+    
+    <div class="article-info">
+        
+        <div class="article-date">2019-12-07</div>
+        
+    </div>
+
+</article>
+
+<script src="https://utteranc.es/client.js"
+        repo="vmax/vmax.github.io"
+        issue-term="url"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+        </main>
+    </div>
+</body>
+</html>
