@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>Boolean fields in django-haystack</title>
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZHVH8SD2XC');
+    </script>
+
+    
+    
+</head>
+<body>
+    <div class="container">
+        <label class="site-title">vmax.dev</label>
+        <main id="main" tabindex="-1">
+            
+
+<article class="post">
+    <a class="baselink" href="https:&#x2F;&#x2F;vmax.dev">&larr;</a>
+    <header>
+        <h1>Boolean fields in django-haystack</h1>
+    </header>
+    <div class="content">
+        <p>Say, you're using <a href="https://pypi.org/project/django-haystack/">django-haystack</a> to integrate search &amp; faceting
+to your project, backed by ElasticSearch. The index that you're building has a boolean field:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">class SampleIndex(indexes.SearchIndex, indexes.Indexable):
+    text = indexes.CharField(document=True)
+    sample_bool = indexes.BooleanField(model_attr=&#39;sample_bool&#39;)
+</span></code></pre>
+<p>Then, you try filtering by that boolean field like you'd normally do with a Django's <code>QuerySet</code>:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">&gt;&gt;&gt; from haystack.query import SearchQuerySet
+&gt;&gt;&gt; SearchQuerySet().count()
+42
+&gt;&gt;&gt; SearchQuerySet().filter(sample_bool=True).count()
+42
+</span></code></pre>
+<p>Is it <em>really</em> correct? Given that there are only boolean values in existence are <code>True</code> and <code>False</code>,
+you'd expect filtering on <code>False</code> should give you exactly zero results. Let's verify that:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">&gt;&gt;&gt; SearchQuerySet().filter(sample_bool=False).count()
+42
+</span></code></pre>
+<p><img src="https://user-images.githubusercontent.com/499267/125994957-d74f0f75-0ccd-4e9d-90a5-835fe6f75b4b.jpg" alt="wat" /></p>
+<p>Well, that's because when translating a query to language that ElasticSearch understands, both <code>True</code> and <code>False</code>
+are turned into their stringified representations (<code>&quot;True&quot;</code> and <code>&quot;False&quot;</code>) which both evaluate to a truthy value. In fact,
+any non-empty string would also yield the same result:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">&gt;&gt;&gt; SearchQuerySet().filter(sample_bool=&#39;example&#39;).count()
+42
+</span></code></pre>
+<p>To get the results we expect we need to pass <code>&quot;true&quot;</code> and <code>&quot;false&quot;</code> (lowercase strings):</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">&gt;&gt;&gt; SearchQuerySet().filter(sample_bool=&#39;true&#39;).count()
+42
+&gt;&gt;&gt; SearchQuerySet().filter(sample_bool=&#39;false&#39;).count()
+0
+</span></code></pre>
+<p>ElasticSearch 5 warns you against passing boolean values directly:</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">[WARN ][o.e.d.i.m.BooleanFieldMapper] searching using boolean value [False] is deprecated, please use [true] or [false]
+</span></code></pre>
+<p>And that's what is called a <a href="https://en.wikipedia.org/wiki/Leaky_abstraction">leaky abstraction</a>. In order to query on
+boolean fields, users need to be aware of how the underlying implementation behaves.</p>
+
+    </div>
+
+    
+    <div class="article-info">
+        
+        <div class="article-date">2021-07-16</div>
+        
+    </div>
+
+</article>
+
+<script src="https://utteranc.es/client.js"
+        repo="vmax/vmax.github.io"
+        issue-term="url"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+        </main>
+    </div>
+</body>
+</html>
