@@ -9,7 +9,7 @@
     <title>Rancher setup guide</title>
     <meta name="description" content="">
 
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+    <link rel="stylesheet" href="https://vmax.dev/main.css">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
     <script>
@@ -73,15 +73,13 @@ executing (locally): <code>docker run --entrypoint htpasswd registry:2 -Bbn &quo
 </ol>
 <p>At this point, we need to modify config of host node to allow accessing our registry.
 Paste the following into <code>/etc/docker/daemon.json</code>:</p>
-<pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">{
-  &quot;insecure-registries&quot; : [&quot;&lt;public_ip&gt;:30861&quot;]
-}
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>{
+</span><span>  &quot;insecure-registries&quot; : [&quot;&lt;public_ip&gt;:30861&quot;]
+</span><span>}
 </span></code></pre>
 <p>and reload the config:</p>
-<pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">systemctl daemon-reload
-systemctl restart docker
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>systemctl daemon-reload
+</span><span>systemctl restart docker
 </span></code></pre>
 <p>You can verify registry is accessible by accessing http://&lt;public_ip&gt;:30861/v2
 Internally (e.g. from Drone CI) registry will be referenced

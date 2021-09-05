@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>Shell hacks</title>
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="https://vmax.dev/main.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-ZHVH8SD2XC');
+    </script>
+
+    
+    
+</head>
+<body>
+    <div class="container">
+        <label class="site-title">vmax.dev</label>
+        <main id="main" tabindex="-1">
+            
+
+<article class="post">
+    <a class="baselink" href="https:&#x2F;&#x2F;vmax.dev">&larr;</a>
+    <header>
+        <h1>Shell hacks</h1>
+    </header>
+    <div class="content">
+        <p>Over years of using the shell on Unix-like systems, I've collected some tricks that dramatically
+increase productivity as well as give me great joy <del>and street credibility among other developers</del>
+when I utilize them. Here they are, in no particular order:</p>
+<h1 id="aliases">Aliases</h1>
+<p><a href="https://en.wikipedia.org/wiki/Alias_(command)">Alias</a> is a shorthand command that expands to a long one.
+You can define as many of them as you want in your shell's rc file (<code>~/.bashrc</code>, <code>~/.zshrc</code> etc.).</p>
+<ul>
+<li>Finding and editing files quickly with the <code>e</code> alias:</li>
+</ul>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>alias e=&quot;fd --type=f | fzf --bind &#39;enter:execute(nvim {1})+abort&#39; || true&quot;
+</span></code></pre>
+<p>This requires <a href="https://github.com/sharkdp/fd"><code>fd</code></a> and <a href="https://github.com/junegunn/fzf"><code>fzf</code></a> to be installed.
+<code>nvim</code> can be adjusted to the editor of your choosing - <code>nano</code> would be more beginner-friendly alternative.</p>
+<ul>
+<li>Interacting with clipboard on Linux:</li>
+</ul>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>alias pbcopy=&quot;xsel --clipboard --input&quot;
+</span><span>alias pbpaste=&quot;xsel --clipboard --output&quot;
+</span></code></pre>
+<p>On macOS these commands are available natively.</p>
+<ul>
+<li>Finding file size:</li>
+</ul>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>alias size=&quot;du -d1 -h&quot;
+</span></code></pre>
+<ul>
+<li>Uploading a file to share publicly:</li>
+</ul>
+<p><a href="https://transfer.sh">Transfer.sh</a> is a great service that allows you to quickly share a file publicly:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>$ curl --upload-file ./hello.txt https://transfer.sh/hello.txt
+</span></code></pre>
+<p>However, we can optimize it a step further by automatically copying the resulting public link into clipboard:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>_transfer(){ if [ $# -eq 0 ];then echo &quot;No arguments specified.\nUsage:\n transfer &lt;file|directory&gt;\n ... | transfer &lt;file_name&gt;&quot;&gt;&amp;2;return 1;fi;if tty -s;then file=&quot;$1&quot;;file_name=$(basename &quot;$file&quot;);if [ ! -e &quot;$file&quot; ];then echo &quot;$file: No such file or directory&quot;&gt;&amp;2;return 1;fi;if [ -d &quot;$file&quot; ];then file_name=&quot;$file_name.zip&quot; ,;(cd &quot;$file&quot;&amp;&amp;zip -r -q - .)|curl --progress-bar --upload-file &quot;-&quot; &quot;http://transfer.sh/$file_name&quot;|tee /dev/null,;else cat &quot;$file&quot;|curl --progress-bar --upload-file &quot;-&quot; &quot;http://transfer.sh/$file_name&quot;|tee /dev/null;fi;else file_name=$1;curl --progress-bar --upload-file &quot;-&quot; &quot;http://transfer.sh/$file_name&quot;|tee /dev/null;fi;}
+</span><span>
+</span><span>function transfer { _transfer &quot;$*&quot; | xsel --clipboard --input }
+</span></code></pre>
+<ul>
+<li>Shorthands for <code>git</code> to copy latest commit's message or SHA1:</li>
+</ul>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>alias git-copy-last-commit-message=&quot;git log -1 --pretty=%B | tr -d &#39;\n&#39; | pbcopy&quot;
+</span><span>alias git-copy-last-commit-sha=&quot;git rev-parse HEAD | tr -d &#39;\n&#39; | pbcopy&quot;
+</span></code></pre>
+<ul>
+<li>Removing all unused Docker images:</li>
+</ul>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>alias docker-images-gc=&quot;docker image ls --format=&#39;{{ .ID }}&#39; | xargs docker image rm&quot;
+</span></code></pre>
+<ul>
+<li>Triggering CI with an empty commit:</li>
+</ul>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>alias t=&quot;git commit --allow-empty -m &quot;Trigger CI&quot; &amp;&amp; git push&quot;
+</span></code></pre>
+<ul>
+<li>Switching between Java 8 and Java 11 (Ubuntu-only):</li>
+</ul>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>alias J8=&#39;sudo update-java-alternatives -s java-1.8.0-openjdk-amd64&#39;
+</span><span>alias J11=&#39;sudo update-java-alternatives -s java-1.11.0-openjdk-amd64&#39;
+</span></code></pre>
+<ul>
+<li>Finding and replacing content in files:</li>
+</ul>
+<p>Install <a href="https://github.com/ggreer/the_silver_searcher"><code>ag</code></a> and define <code>agr</code> function (&quot;ag replace&quot;):</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>function agr { ag -0 -l &quot;$1&quot; | AGR_FROM=&quot;$1&quot; AGR_TO=&quot;$2&quot; xargs -r0 perl -pi -e &#39;s/$ENV{AGR_FROM}/$ENV{AGR_TO}/g&#39;; }
+</span></code></pre>
+<p>Usage:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>$ ag needle
+</span><span>$ agr oldtext newtext
+</span></code></pre>
+<h1 id="keyboard-shortcuts">Keyboard shortcuts</h1>
+<p>Due to using <a href="https://en.wikipedia.org/wiki/GNU_Readline">GNU Readline library</a>, these keyboard shortcuts are commonly available:</p>
+<table><thead><tr><th>Shortcut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>Ctrl+A</code></td><td>Go to beginning of the line</td></tr>
+<tr><td><code>Ctrl+E</code></td><td>Go to end of the line</td></tr>
+<tr><td><code>Ctrl+R</code></td><td>Search backwards in history</td></tr>
+<tr><td><code>Ctrl+S</code></td><td>Search forwards in history</td></tr>
+</tbody></table>
+<p>A good developer is a <strong>lazy</strong> developer; instead of typing commands over and
+over again, you should use history as much as possible.</p>
+
+    </div>
+
+    
+    <div class="article-info">
+        
+        <div class="article-date">2021-09-05</div>
+        
+    </div>
+
+</article>
+
+<script src="https://utteranc.es/client.js"
+        repo="vmax/vmax.github.io"
+        issue-term="url"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+        </main>
+    </div>
+</body>
+</html>

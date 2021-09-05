@@ -9,7 +9,7 @@
     <title>Order of files inside ZIP archives</title>
     <meta name="description" content="">
 
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+    <link rel="stylesheet" href="https://vmax.dev/main.css">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
     <script>
@@ -42,22 +42,21 @@ is changed and unpack them, you won't see any difference.</p>
 nothing as frustrating as a cache miss with unchanged sources - and the
 resulting ZIPs only differ when compared by checksum.</p>
 <p>Reproducible example:</p>
-<pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">&gt;&gt;&gt; from zipfile import ZipFile
-&gt;&gt;&gt; zf1 = ZipFile(&#39;test1.zip&#39;, &#39;w&#39;)
-&gt;&gt;&gt; zf1.writestr(&#39;a&#39;, &#39;&#39;)
-&gt;&gt;&gt; zf1.writestr(&#39;b&#39;, &#39;&#39;)
-&gt;&gt;&gt; zf1.close()
-
-&gt;&gt;&gt; zf2 = ZipFile(&#39;test2.zip&#39;, &#39;w&#39;)
-&gt;&gt;&gt; zf2.writestr(&#39;b&#39;, &#39;&#39;)
-&gt;&gt;&gt; zf2.writestr(&#39;a&#39;, &#39;&#39;)
-&gt;&gt;&gt; zf2.close()
-</span></code></pre><pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">$ md5sum test1.zip
-72bf1a6d0e0ad7a0c2548168b701e4ad  test1.zip
-$ md5sum test2.zip
-f5fc3ae82cbd94c70b27f2d479648b26  test2.zip
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>&gt;&gt;&gt; from zipfile import ZipFile
+</span><span>&gt;&gt;&gt; zf1 = ZipFile(&#39;test1.zip&#39;, &#39;w&#39;)
+</span><span>&gt;&gt;&gt; zf1.writestr(&#39;a&#39;, &#39;&#39;)
+</span><span>&gt;&gt;&gt; zf1.writestr(&#39;b&#39;, &#39;&#39;)
+</span><span>&gt;&gt;&gt; zf1.close()
+</span><span>
+</span><span>&gt;&gt;&gt; zf2 = ZipFile(&#39;test2.zip&#39;, &#39;w&#39;)
+</span><span>&gt;&gt;&gt; zf2.writestr(&#39;b&#39;, &#39;&#39;)
+</span><span>&gt;&gt;&gt; zf2.writestr(&#39;a&#39;, &#39;&#39;)
+</span><span>&gt;&gt;&gt; zf2.close()
+</span></code></pre>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>$ md5sum test1.zip
+</span><span>72bf1a6d0e0ad7a0c2548168b701e4ad  test1.zip
+</span><span>$ md5sum test2.zip
+</span><span>f5fc3ae82cbd94c70b27f2d479648b26  test2.zip
 </span></code></pre>
 <p><a href="https://github.com/graknlabs/bazel-distribution/pull/94/">This</a> is the fix we applied - file names are pre-sorted
 before getting packaged into the archive.</p>

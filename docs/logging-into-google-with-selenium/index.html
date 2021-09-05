@@ -9,7 +9,7 @@
     <title>Logging into Google with Selenium</title>
     <meta name="description" content="">
 
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+    <link rel="stylesheet" href="https://vmax.dev/main.css">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
     <script>
@@ -44,50 +44,50 @@ inspired me for a simple solution: why fix it if it's not broken <em>by me</em> 
 </blockquote>
 <p>Turning JS off was not an option (<a href="https://stackoverflow.com/a/27787494/4617642">here's why</a>). I decided to go with the first one. Surprisingly, it worked just as expected! Now in the code, we fake <code>User-Agent</code> to be one of the Chrome very old versions, 19. I got the exact string from <a href="http://www.useragentstring.com/pages/useragentstring.php?name=Chrome">here</a>. It gets the job done: Google sends us the old log in form.</p>
 <p>This is the code used to achieve the task:</p>
-<pre style="background-color:#2b303b;">
-<code class="language-python" data-lang="python"><span style="color:#c0c5ce;">    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver.common.by </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">By
-    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">PhantomJS
-    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver.common.desired_capabilities </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">(
-        DesiredCapabilities)
-    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver.support </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">expected_conditions
-    </span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">selenium.webdriver.support.ui </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">WebDriverWait
-
-
-    </span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">google_sign_in</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">gmail_username</span><span style="color:#c0c5ce;">, </span><span style="color:#bf616a;">gmail_pass</span><span style="color:#c0c5ce;">):
-        </span><span style="color:#bf616a;">CHROME_UAG </span><span style="color:#c0c5ce;">= (&#39;</span><span style="color:#a3be8c;">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) </span><span style="color:#c0c5ce;">&#39;
-                      &#39;</span><span style="color:#a3be8c;">AppleWebKit/535.7 (KHTML, like Gecko) </span><span style="color:#c0c5ce;">&#39;
-                      &#39;</span><span style="color:#a3be8c;">Chrome/16.0.912.36 Safari/535.7</span><span style="color:#c0c5ce;">&#39;)
-        caps = DesiredCapabilities.</span><span style="color:#bf616a;">PHANTOMJS
-        </span><span style="color:#c0c5ce;">caps[&quot;</span><span style="color:#a3be8c;">phantomjs.page.settings.userAgent</span><span style="color:#c0c5ce;">&quot;] = </span><span style="color:#bf616a;">CHROME_UAG
-
-        </span><span style="color:#65737e;"># firstly, create webdriver for scraping
-        </span><span style="color:#c0c5ce;">driver = </span><span style="color:#bf616a;">PhantomJS</span><span style="color:#c0c5ce;">(
-            </span><span style="color:#bf616a;">executable_path</span><span style="color:#c0c5ce;">=&#39;</span><span style="color:#a3be8c;">bin/phantomjs</span><span style="color:#c0c5ce;">&#39;,
-            </span><span style="color:#bf616a;">desired_capabilities</span><span style="color:#c0c5ce;">=caps
-        )
-
-        </span><span style="color:#65737e;"># set size so we that we (and browser) can see everything
-        </span><span style="color:#c0c5ce;">driver.</span><span style="color:#bf616a;">set_window_size</span><span style="color:#c0c5ce;">(</span><span style="color:#d08770;">2000</span><span style="color:#c0c5ce;">, </span><span style="color:#d08770;">2000</span><span style="color:#c0c5ce;">)
-
-        </span><span style="color:#65737e;"># go to login form
-        </span><span style="color:#bf616a;">GOOGLE_SIGN_IN_URL </span><span style="color:#c0c5ce;">= &#39;</span><span style="color:#a3be8c;">https://accounts.google.com/ServiceLogin</span><span style="color:#c0c5ce;">&#39;
-        driver.</span><span style="color:#bf616a;">get</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">GOOGLE_SIGN_IN_URL</span><span style="color:#c0c5ce;">)
-
-        </span><span style="color:#65737e;"># enter username
-        </span><span style="color:#c0c5ce;">username_field = driver.</span><span style="color:#bf616a;">find_element_by_id</span><span style="color:#c0c5ce;">(&#39;</span><span style="color:#a3be8c;">Email</span><span style="color:#c0c5ce;">&#39;)
-        username_field.</span><span style="color:#bf616a;">send_keys</span><span style="color:#c0c5ce;">(gmail_username)
-        username_field.</span><span style="color:#bf616a;">submit</span><span style="color:#c0c5ce;">()
-
-        </span><span style="color:#65737e;"># enter password (but we have to wait until animation is finished)
-        </span><span style="color:#c0c5ce;">password_field = </span><span style="color:#bf616a;">WebDriverWait</span><span style="color:#c0c5ce;">(driver, </span><span style="color:#d08770;">10</span><span style="color:#c0c5ce;">).</span><span style="color:#bf616a;">until</span><span style="color:#c0c5ce;">(
-            expected_conditions.</span><span style="color:#bf616a;">element_to_be_clickable</span><span style="color:#c0c5ce;">((By.</span><span style="color:#bf616a;">ID</span><span style="color:#c0c5ce;">, &quot;</span><span style="color:#a3be8c;">Passwd</span><span style="color:#c0c5ce;">&quot;))
-        )
-
-        password_field.</span><span style="color:#bf616a;">send_keys</span><span style="color:#c0c5ce;">(gmail_pass)
-        password_field.</span><span style="color:#bf616a;">submit</span><span style="color:#c0c5ce;">()
-        </span><span style="color:#b48ead;">return </span><span style="color:#c0c5ce;">driver
-
+<pre data-lang="python" style="background-color:#2b303b;color:#c0c5ce;" class="language-python "><code class="language-python" data-lang="python"><span>    </span><span style="color:#b48ead;">from </span><span>selenium.webdriver.common.by </span><span style="color:#b48ead;">import </span><span>By
+</span><span>    </span><span style="color:#b48ead;">from </span><span>selenium.webdriver </span><span style="color:#b48ead;">import </span><span>PhantomJS
+</span><span>    </span><span style="color:#b48ead;">from </span><span>selenium.webdriver.common.desired_capabilities </span><span style="color:#b48ead;">import </span><span>(
+</span><span>        DesiredCapabilities)
+</span><span>    </span><span style="color:#b48ead;">from </span><span>selenium.webdriver.support </span><span style="color:#b48ead;">import </span><span>expected_conditions
+</span><span>    </span><span style="color:#b48ead;">from </span><span>selenium.webdriver.support.ui </span><span style="color:#b48ead;">import </span><span>WebDriverWait
+</span><span>
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">google_sign_in</span><span>(</span><span style="color:#bf616a;">gmail_username</span><span>, </span><span style="color:#bf616a;">gmail_pass</span><span>):
+</span><span>        </span><span style="color:#bf616a;">CHROME_UAG </span><span>= (&#39;</span><span style="color:#a3be8c;">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) </span><span>&#39;
+</span><span>                      &#39;</span><span style="color:#a3be8c;">AppleWebKit/535.7 (KHTML, like Gecko) </span><span>&#39;
+</span><span>                      &#39;</span><span style="color:#a3be8c;">Chrome/16.0.912.36 Safari/535.7</span><span>&#39;)
+</span><span>        caps = DesiredCapabilities.</span><span style="color:#bf616a;">PHANTOMJS
+</span><span>        caps[&quot;</span><span style="color:#a3be8c;">phantomjs.page.settings.userAgent</span><span>&quot;] = </span><span style="color:#bf616a;">CHROME_UAG
+</span><span>
+</span><span>        </span><span style="color:#65737e;"># firstly, create webdriver for scraping
+</span><span>        driver = </span><span style="color:#bf616a;">PhantomJS</span><span>(
+</span><span>            </span><span style="color:#bf616a;">executable_path</span><span>=&#39;</span><span style="color:#a3be8c;">bin/phantomjs</span><span>&#39;,
+</span><span>            </span><span style="color:#bf616a;">desired_capabilities</span><span>=caps
+</span><span>        )
+</span><span>
+</span><span>        </span><span style="color:#65737e;"># set size so we that we (and browser) can see everything
+</span><span>        driver.</span><span style="color:#bf616a;">set_window_size</span><span>(</span><span style="color:#d08770;">2000</span><span>, </span><span style="color:#d08770;">2000</span><span>)
+</span><span>
+</span><span>        </span><span style="color:#65737e;"># go to login form
+</span><span>        </span><span style="color:#bf616a;">GOOGLE_SIGN_IN_URL </span><span>= &#39;</span><span style="color:#a3be8c;">https://accounts.google.com/ServiceLogin</span><span>&#39;
+</span><span>        driver.</span><span style="color:#bf616a;">get</span><span>(</span><span style="color:#bf616a;">GOOGLE_SIGN_IN_URL</span><span>)
+</span><span>
+</span><span>        </span><span style="color:#65737e;"># enter username
+</span><span>        username_field = driver.</span><span style="color:#bf616a;">find_element_by_id</span><span>(&#39;</span><span style="color:#a3be8c;">Email</span><span>&#39;)
+</span><span>        username_field.</span><span style="color:#bf616a;">send_keys</span><span>(gmail_username)
+</span><span>        username_field.</span><span style="color:#bf616a;">submit</span><span>()
+</span><span>
+</span><span>        </span><span style="color:#65737e;"># enter password (but we have to wait until animation is finished)
+</span><span>        password_field = </span><span style="color:#bf616a;">WebDriverWait</span><span>(driver, </span><span style="color:#d08770;">10</span><span>).</span><span style="color:#bf616a;">until</span><span>(
+</span><span>            expected_conditions.</span><span style="color:#bf616a;">element_to_be_clickable</span><span>((By.</span><span style="color:#bf616a;">ID</span><span>, &quot;</span><span style="color:#a3be8c;">Passwd</span><span>&quot;))
+</span><span>        )
+</span><span>
+</span><span>        password_field.</span><span style="color:#bf616a;">send_keys</span><span>(gmail_pass)
+</span><span>        password_field.</span><span style="color:#bf616a;">submit</span><span>()
+</span><span>        </span><span style="color:#b48ead;">return </span><span>driver
+</span><span>
 </span></code></pre>
+
     </div>
 
     

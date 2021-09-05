@@ -9,7 +9,7 @@
     <title>Producing long-running reports</title>
     <meta name="description" content="">
 
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;vmax.dev&#x2F;main.css">
+    <link rel="stylesheet" href="https://vmax.dev/main.css">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZHVH8SD2XC"></script>
     <script>
@@ -46,21 +46,20 @@ worker, message broker, result broker and storage for the produced reports.</p>
 Then limitations become much more manageable: you have to send the first byte before 30 seconds,
 each next chunk has 55 seconds to be produced (<a href="https://devcenter.heroku.com/articles/http-routing#timeouts">source</a>)</p>
 <p>Here is how you would implement it with Django:</p>
-<pre style="background-color:#2b303b;">
-<code class="language-python" data-lang="python"><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">csv
-</span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">time
-</span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">io
-</span><span style="color:#b48ead;">from </span><span style="color:#c0c5ce;">django.http </span><span style="color:#b48ead;">import </span><span style="color:#c0c5ce;">StreamingHttpResponse
-
-
-</span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">streaming_csv_view</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">request</span><span style="color:#c0c5ce;">):
-    </span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">data</span><span style="color:#c0c5ce;">():
-        </span><span style="color:#b48ead;">for </span><span style="color:#c0c5ce;">i </span><span style="color:#b48ead;">in </span><span style="color:#96b5b4;">range</span><span style="color:#c0c5ce;">(</span><span style="color:#d08770;">30</span><span style="color:#c0c5ce;">):
-            </span><span style="color:#b48ead;">yield f</span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">Row </span><span style="color:#c0c5ce;">{i}</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;  </span><span style="color:#65737e;"># yield results as they are produced
-            </span><span style="color:#c0c5ce;">time.</span><span style="color:#bf616a;">sleep</span><span style="color:#c0c5ce;">(</span><span style="color:#d08770;">2</span><span style="color:#c0c5ce;">)  </span><span style="color:#65737e;"># simulate non-instant generation
-    </span><span style="color:#c0c5ce;">response = </span><span style="color:#bf616a;">StreamingHttpResponse</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">data</span><span style="color:#c0c5ce;">(), </span><span style="color:#bf616a;">content_type</span><span style="color:#c0c5ce;">=&quot;</span><span style="color:#a3be8c;">text/csv</span><span style="color:#c0c5ce;">&quot;)
-    response[&#39;</span><span style="color:#a3be8c;">Content-Disposition</span><span style="color:#c0c5ce;">&#39;] = &#39;</span><span style="color:#a3be8c;">attachment; filename=&quot;report.csv&quot;</span><span style="color:#c0c5ce;">&#39;
-    </span><span style="color:#b48ead;">return </span><span style="color:#c0c5ce;">response
+<pre data-lang="python" style="background-color:#2b303b;color:#c0c5ce;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#b48ead;">import </span><span>csv
+</span><span style="color:#b48ead;">import </span><span>time
+</span><span style="color:#b48ead;">import </span><span>io
+</span><span style="color:#b48ead;">from </span><span>django.http </span><span style="color:#b48ead;">import </span><span>StreamingHttpResponse
+</span><span>
+</span><span>
+</span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">streaming_csv_view</span><span>(</span><span style="color:#bf616a;">request</span><span>):
+</span><span>    </span><span style="color:#b48ead;">def </span><span style="color:#8fa1b3;">data</span><span>():
+</span><span>        </span><span style="color:#b48ead;">for </span><span>i </span><span style="color:#b48ead;">in </span><span style="color:#96b5b4;">range</span><span>(</span><span style="color:#d08770;">30</span><span>):
+</span><span>            </span><span style="color:#b48ead;">yield f</span><span>&quot;</span><span style="color:#a3be8c;">Row </span><span>{i}</span><span style="color:#96b5b4;">\n</span><span>&quot;  </span><span style="color:#65737e;"># yield results as they are produced
+</span><span>            time.</span><span style="color:#bf616a;">sleep</span><span>(</span><span style="color:#d08770;">2</span><span>)  </span><span style="color:#65737e;"># simulate non-instant generation
+</span><span>    response = </span><span style="color:#bf616a;">StreamingHttpResponse</span><span>(</span><span style="color:#bf616a;">data</span><span>(), </span><span style="color:#bf616a;">content_type</span><span>=&quot;</span><span style="color:#a3be8c;">text/csv</span><span>&quot;)
+</span><span>    response[&#39;</span><span style="color:#a3be8c;">Content-Disposition</span><span>&#39;] = &#39;</span><span style="color:#a3be8c;">attachment; filename=&quot;report.csv&quot;</span><span>&#39;
+</span><span>    </span><span style="color:#b48ead;">return </span><span>response
 </span></code></pre>
 <p>Note that if you're using GUnicorn as your server, you'd need to switch to asynchronous workers (
 if you were using <code>sync</code> workers before):</br>
